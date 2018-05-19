@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.belonk.taobao.mapper.CategoryMapper" >
+  <resultMap id="BaseResultMap" type="com.belonk.taobao.domain.Category" >
+    <id column="id" property="id" jdbcType="BIGINT" />
+    <result column="name" property="name" jdbcType="VARCHAR" />
+    <result column="pid" property="pid" jdbcType="BIGINT" />
+    <result column="spell" property="spell" jdbcType="VARCHAR" />
+    <result column="deep" property="deep" jdbcType="INTEGER" />
+    <result column="leaf" property="leaf" jdbcType="INTEGER" />
+    <result column="status" property="status" jdbcType="INTEGER" />
+    <result column="typeName" property="typeName" jdbcType="VARCHAR" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id, name, pid, spell, deep, leaf, status, typeName
+  </sql>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="java.lang.Long" >
+    select 
+    <include refid="Base_Column_List" />
+    from category
+    where id = #{id,jdbcType=BIGINT}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.Long" >
+    delete from category
+    where id = #{id,jdbcType=BIGINT}
+  </delete>
+  <insert id="insert" parameterType="com.belonk.taobao.domain.Category" >
+    <selectKey resultType="java.lang.Long" keyProperty="id" order="AFTER" >
+      SELECT LAST_INSERT_ID()
+    </selectKey>
+    insert into category (name, pid, spell, 
+      deep, leaf, status, 
+      typeName)
+    values (#{name,jdbcType=VARCHAR}, #{pid,jdbcType=BIGINT}, #{spell,jdbcType=VARCHAR}, 
+      #{deep,jdbcType=INTEGER}, #{leaf,jdbcType=INTEGER}, #{status,jdbcType=INTEGER}, 
+      #{typeName,jdbcType=VARCHAR})
+  </insert>
+  <insert id="insertSelective" parameterType="com.belonk.taobao.domain.Category" >
+    <selectKey resultType="java.lang.Long" keyProperty="id" order="AFTER" >
+      SELECT LAST_INSERT_ID()
+    </selectKey>
+    insert into category
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="name != null" >
+        name,
+      </if>
+      <if test="pid != null" >
+        pid,
+      </if>
+      <if test="spell != null" >
+        spell,
+      </if>
+      <if test="deep != null" >
+        deep,
+      </if>
+      <if test="leaf != null" >
+        leaf,
+      </if>
+      <if test="status != null" >
+        status,
+      </if>
+      <if test="typeName != null" >
+        typeName,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="name != null" >
+        #{name,jdbcType=VARCHAR},
+      </if>
+      <if test="pid != null" >
+        #{pid,jdbcType=BIGINT},
+      </if>
+      <if test="spell != null" >
+        #{spell,jdbcType=VARCHAR},
+      </if>
+      <if test="deep != null" >
+        #{deep,jdbcType=INTEGER},
+      </if>
+      <if test="leaf != null" >
+        #{leaf,jdbcType=INTEGER},
+      </if>
+      <if test="status != null" >
+        #{status,jdbcType=INTEGER},
+      </if>
+      <if test="typeName != null" >
+        #{typeName,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.belonk.taobao.domain.Category" >
+    update category
+    <set >
+      <if test="name != null" >
+        name = #{name,jdbcType=VARCHAR},
+      </if>
+      <if test="pid != null" >
+        pid = #{pid,jdbcType=BIGINT},
+      </if>
+      <if test="spell != null" >
+        spell = #{spell,jdbcType=VARCHAR},
+      </if>
+      <if test="deep != null" >
+        deep = #{deep,jdbcType=INTEGER},
+      </if>
+      <if test="leaf != null" >
+        leaf = #{leaf,jdbcType=INTEGER},
+      </if>
+      <if test="status != null" >
+        status = #{status,jdbcType=INTEGER},
+      </if>
+      <if test="typeName != null" >
+        typeName = #{typeName,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.belonk.taobao.domain.Category" >
+    update category
+    set name = #{name,jdbcType=VARCHAR},
+      pid = #{pid,jdbcType=BIGINT},
+      spell = #{spell,jdbcType=VARCHAR},
+      deep = #{deep,jdbcType=INTEGER},
+      leaf = #{leaf,jdbcType=INTEGER},
+      status = #{status,jdbcType=INTEGER},
+      typeName = #{typeName,jdbcType=VARCHAR}
+    where id = #{id,jdbcType=BIGINT}
+  </update>
+
+  <insert id="createTable" parameterType="java.lang.String">
+      CREATE TABLE `category_#{name}` (
+      `id` bigint(20) NOT NULL AUTO_INCREMENT,
+      `name` varchar(200) DEFAULT NULL,
+      `pid` bigint(20) DEFAULT NULL,
+      `spell` varchar(200) DEFAULT NULL,
+      `deep` int(11) DEFAULT NULL,
+      `leaf` int(11) DEFAULT NULL,
+      `status` int(11) DEFAULT NULL,
+      `typeName` varchar(200) DEFAULT NULL,
+      PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB AUTO_INCREMENT=7545 DEFAULT CHARSET=utf8;
+  </insert>
+</mapper>
