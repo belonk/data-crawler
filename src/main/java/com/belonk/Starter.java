@@ -1,19 +1,15 @@
 package com.belonk;
 
-import com.belonk.taobao.CommodityCategoryCrawler;
+import com.belonk.taobao.service.CommodityCategoryCrawler;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.builder.SpringApplicationBuilder;
-import org.springframework.context.ApplicationEvent;
-import org.springframework.context.ApplicationListener;
 import org.springframework.context.annotation.ImportResource;
-
-import java.util.List;
-import java.util.Set;
 
 /**
  * Created by sun on 2018/5/19.
@@ -44,6 +40,7 @@ public class Starter implements ApplicationRunner {
      */
 
     @Autowired
+    @Qualifier("dynamicCommodityCategoryCrawler")
     private CommodityCategoryCrawler commodityCategoryCrawler;
 
     /*
@@ -84,6 +81,11 @@ public class Starter implements ApplicationRunner {
 //            System.out.println("=================================");
 //        }
         commodityCategoryCrawler.run();
+//        log.info("xxxxxxxxxxxxxxxxx");
+//        log.error("xxxxxxxxxxxxxxxxx");
+//        log.debug("xxxxxxxxxxxxxxxxx");
+//        log.warn("xxxxxxxxxxxxxxxxx");
+//        log.trace("xxxxxxxxxxxxxxxxx");
     }
 
     /*

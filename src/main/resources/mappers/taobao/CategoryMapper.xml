@@ -125,18 +125,4 @@
       typeName = #{typeName,jdbcType=VARCHAR}
     where id = #{id,jdbcType=BIGINT}
   </update>
-
-  <insert id="createTable" parameterType="java.lang.String">
-      CREATE TABLE `category_#{name}` (
-      `id` bigint(20) NOT NULL AUTO_INCREMENT,
-      `name` varchar(200) DEFAULT NULL,
-      `pid` bigint(20) DEFAULT NULL,
-      `spell` varchar(200) DEFAULT NULL,
-      `deep` int(11) DEFAULT NULL,
-      `leaf` int(11) DEFAULT NULL,
-      `status` int(11) DEFAULT NULL,
-      `typeName` varchar(200) DEFAULT NULL,
-      PRIMARY KEY (`id`)
-    ) ENGINE=InnoDB AUTO_INCREMENT=7545 DEFAULT CHARSET=utf8;
-  </insert>
 </mapper>

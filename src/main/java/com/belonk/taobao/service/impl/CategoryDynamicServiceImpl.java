@@ -1,8 +1,8 @@
 package com.belonk.taobao.service.impl;
 
 import com.belonk.taobao.domain.Category;
-import com.belonk.taobao.mapper.CategoryMapper;
-import com.belonk.taobao.service.CategoryService;
+import com.belonk.taobao.mapper.CategoryDynamicMapper;
+import com.belonk.taobao.service.CategoryDynamicService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,7 +16,7 @@ import org.springframework.stereotype.Service;
  * @since 1.0
  */
 @Service
-public class CategoryServiceImpl implements CategoryService {
+public class CategoryDynamicServiceImpl implements CategoryDynamicService {
     /*
      * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
      *
@@ -25,7 +25,7 @@ public class CategoryServiceImpl implements CategoryService {
      * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
      */
 
-    private static Logger log = LoggerFactory.getLogger(CategoryServiceImpl.class);
+    private static Logger log = LoggerFactory.getLogger(CategoryDynamicServiceImpl.class);
 
     /*
      * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -36,7 +36,7 @@ public class CategoryServiceImpl implements CategoryService {
      */
 
     @Autowired
-    private CategoryMapper categoryMapper;
+    private CategoryDynamicMapper categoryDynamicMapper;
 
     /*
      * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -57,23 +57,29 @@ public class CategoryServiceImpl implements CategoryService {
      */
 
     @Override
-    public void add(Category category) {
-        categoryMapper.insertSelective(category);
+    public void add(String name, Category category) {
+        categoryDynamicMapper.insertSelective(name, category);
     }
 
     @Override
-    public void update(Category category) {
-        categoryMapper.updateByPrimaryKeySelective(category);
+    public void update(String name, Category category) {
+        categoryDynamicMapper.updateByPrimaryKeySelective(name, category);
     }
 
     @Override
-    public Category get(Long id) {
-        return categoryMapper.selectByPrimaryKey(id);
+    public Category get(String name, Long id) {
+        return categoryDynamicMapper.selectByPrimaryKey(name, id);
     }
 
     @Override
-    public void delete(Long id) {
-        categoryMapper.deleteByPrimaryKey(id);
+    public void delete(String name, Long id) {
+        categoryDynamicMapper.deleteByPrimaryKey(name, id);
+    }
+
+    @Override
+    public void createTable(String name) {
+        categoryDynamicMapper.deleteTable(name);
+        categoryDynamicMapper.createTable(name);
     }
 
     /*

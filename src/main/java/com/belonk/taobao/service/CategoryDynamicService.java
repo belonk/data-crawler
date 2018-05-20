@@ -9,7 +9,7 @@ import com.belonk.taobao.domain.Category;
  * @version 1.0
  * @since 1.0
  */
-public interface CategoryService {
+public interface CategoryDynamicService {
     /*
      * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
      *
@@ -28,11 +28,13 @@ public interface CategoryService {
      * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
      */
 
-    void add(Category category);
+    void add(String name, Category category);
 
-    void update(Category category);
+    void update(String name, Category category);
 
-    Category get(Long id);
+    Category get(String name, Long id);
 
-    void delete(Long id);
+    void delete(String name, Long id);
+
+    void createTable(String name);
 }

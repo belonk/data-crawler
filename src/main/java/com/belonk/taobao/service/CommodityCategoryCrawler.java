@@ -1,7 +1,5 @@
 package com.belonk.taobao.service;
 
-import com.belonk.taobao.domain.Category;
-
 /**
  * Created by sun on 2018/5/19.
  *
@@ -9,7 +7,7 @@ import com.belonk.taobao.domain.Category;
  * @version 1.0
  * @since 1.0
  */
-public interface CategoryService {
+public interface CommodityCategoryCrawler {
     /*
      * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
      *
@@ -28,11 +26,5 @@ public interface CategoryService {
      * ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
      */
 
-    void add(Category category);
-
-    void update(Category category);
-
-    Category get(Long id);
-
-    void delete(Long id);
+    void run() throws Exception;
 }

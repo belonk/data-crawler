@@ -1,0 +1,146 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.belonk.taobao.mapper.CategoryDynamicMapper" >
+  <resultMap id="BaseResultMap" type="com.belonk.taobao.domain.Category" >
+    <id column="id" property="id" jdbcType="BIGINT" />
+    <result column="name" property="name" jdbcType="VARCHAR" />
+    <result column="pid" property="pid" jdbcType="BIGINT" />
+    <result column="spell" property="spell" jdbcType="VARCHAR" />
+    <result column="deep" property="deep" jdbcType="INTEGER" />
+    <result column="leaf" property="leaf" jdbcType="INTEGER" />
+    <result column="status" property="status" jdbcType="INTEGER" />
+    <result column="typeName" property="typeName" jdbcType="VARCHAR" />
+  </resultMap>
+  <sql id="Base_Column_List" >
+    id, name, pid, spell, deep, leaf, status, typeName
+  </sql>
+  <select id="selectByPrimaryKey" resultMap="BaseResultMap" parameterType="hashmap" >
+    select 
+    <include refid="Base_Column_List" />
+    from category_${name}
+    where id = #{id,jdbcType=BIGINT}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="hashmap" >
+    delete from category_${name}
+    where id = #{id,jdbcType=BIGINT}
+  </delete>
+  <insert id="insert" parameterType="hashmap" >
+    <selectKey resultType="java.lang.Long" keyProperty="record.id" order="AFTER" >
+      SELECT LAST_INSERT_ID()
+    </selectKey>
+    insert into category_${name} (name, pid, spell, 
+      deep, leaf, status, 
+      typeName)
+    values (#{record.name,jdbcType=VARCHAR}, #{record.pid,jdbcType=BIGINT}, #{record.spell,jdbcType=VARCHAR},
+      #{record.deep,jdbcType=INTEGER}, #{record.leaf,jdbcType=INTEGER}, #{record.status,jdbcType=INTEGER},
+      #{record.typeName,jdbcType=VARCHAR})
+  </insert>
+  <insert id="insertSelective" parameterType="hashmap" >
+    <selectKey resultType="java.lang.Long" keyProperty="record.id" order="AFTER" >
+      SELECT LAST_INSERT_ID()
+    </selectKey>
+    insert into category_${name}
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="record.name != null" >
+        name,
+      </if>
+      <if test="record.pid != null" >
+        pid,
+      </if>
+      <if test="record.spell != null" >
+        spell,
+      </if>
+      <if test="record.deep != null" >
+        deep,
+      </if>
+      <if test="record.leaf != null" >
+        leaf,
+      </if>
+      <if test="record.status != null" >
+        status,
+      </if>
+      <if test="record.typeName != null" >
+        typeName,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="record.name != null" >
+        #{record.name,jdbcType=VARCHAR},
+      </if>
+      <if test="record.pid != null" >
+        #{record.pid,jdbcType=BIGINT},
+      </if>
+      <if test="record.spell != null" >
+        #{record.spell,jdbcType=VARCHAR},
+      </if>
+      <if test="record.deep != null" >
+        #{record.deep,jdbcType=INTEGER},
+      </if>
+      <if test="record.leaf != null" >
+        #{record.leaf,jdbcType=INTEGER},
+      </if>
+      <if test="record.status != null" >
+        #{record.status,jdbcType=INTEGER},
+      </if>
+      <if test="record.typeName != null" >
+        #{record.typeName,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="hashmap" >
+    update category_${name}
+    <set >
+      <if test="record.name != null" >
+        name = #{record.name,jdbcType=VARCHAR},
+      </if>
+      <if test="record.pid != null" >
+        pid = #{record.pid,jdbcType=BIGINT},
+      </if>
+      <if test="record.spell != null" >
+        spell = #{record.spell,jdbcType=VARCHAR},
+      </if>
+      <if test="record.deep != null" >
+        deep = #{record.deep,jdbcType=INTEGER},
+      </if>
+      <if test="record.leaf != null" >
+        leaf = #{record.leaf,jdbcType=INTEGER},
+      </if>
+      <if test="record.status != null" >
+        status = #{record.status,jdbcType=INTEGER},
+      </if>
+      <if test="record.typeName != null" >
+        typeName = #{record.typeName,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where id = #{record.id,jdbcType=BIGINT}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="hashmap" >
+    update category_${name}
+    set name = #{record.name,jdbcType=VARCHAR},
+      pid = #{record.pid,jdbcType=BIGINT},
+      spell = #{record.spell,jdbcType=VARCHAR},
+      deep = #{record.deep,jdbcType=INTEGER},
+      leaf = #{record.leaf,jdbcType=INTEGER},
+      status = #{record.status,jdbcType=INTEGER},
+      typeName = #{record.typeName,jdbcType=VARCHAR}
+    where id = #{record.id,jdbcType=BIGINT}
+  </update>
+
+  <update id="createTable" parameterType="java.lang.String">
+      CREATE TABLE `category_${name}` (
+      `id` bigint(20) NOT NULL AUTO_INCREMENT,
+      `name` varchar(200) DEFAULT NULL,
+      `pid` bigint(20) DEFAULT NULL,
+      `spell` varchar(200) DEFAULT NULL,
+      `deep` int(11) DEFAULT NULL,
+      `leaf` int(11) DEFAULT NULL,
+      `status` int(11) DEFAULT NULL,
+      `typeName` varchar(200) DEFAULT NULL,
+      PRIMARY KEY (`id`)
+    ) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
+  </update>
+
+  <update id="deleteTable" parameterType="java.lang.String">
+    DROP TABLE IF EXISTS `category_${name}`
+  </update>
+</mapper>
