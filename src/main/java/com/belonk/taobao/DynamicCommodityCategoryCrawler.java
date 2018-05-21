@@ -46,7 +46,11 @@ public class DynamicCommodityCategoryCrawler extends AbstractCommodityCategoryCr
 
     private static int threadCnt = 0;
 
-    private static ExecutorService executorService = new ThreadPoolExecutor(8, 16,
+    private static final int POOL_SIZE = 16;
+
+    private volatile int dataNumber = 0;
+
+    private static ThreadPoolExecutor executorService = new ThreadPoolExecutor(POOL_SIZE, POOL_SIZE * 2,
             60, TimeUnit.MINUTES, new ArrayBlockingQueue<Runnable>(1024), r -> {
         Thread thread = new Thread(r);
         thread.setName("crawl-thread-" + thread.getId());
@@ -89,10 +93,15 @@ public class DynamicCommodityCategoryCrawler extends AbstractCommodityCategoryCr
 
     @Override
     public void run() throws IOException {
-        crawl();
+        try {
+            crawl();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 
-    private void crawl() throws IOException {
+    private void crawl() throws IOException, InterruptedException {
+        long start = System.currentTimeMillis();
         Map<String, Object> params = new HashMap<>();
         params.put("path", PATH.ALL.toString().toLowerCase());
         params.put("sid", "");
@@ -145,11 +154,48 @@ public class DynamicCommodityCategoryCrawler extends AbstractCommodityCategoryCr
         }
         log.info("Top and second category are saved completely, start to query and save all sub categories recusively.");
         log.info("Start node count : " + startNodes.size());
+        new Thread(new Runnable() {
+            /**
+             * taskCount：线程池需要执行的任务数量。
+             completedTaskCount：线程池在运行过程中已完成的任务数量。小于或等于taskCount。
+             largestPoolSize：线程池曾经创建过的最大线程数量。通过这个数据可以知道线程池是否满过。如等于线程池的最大大小，则表示线程池曾经满了。
+             getPoolSize:线程池的线程数量。如果线程池不销毁的话，池里的线程不会自动销毁，所以这个大小只增不+
+             getActiveCount：获取活动的线程数。
+             *
+             */
+            @Override
+            public void run() {
+                while (true) {
+                    int activeCount = executorService.getActiveCount();
+                    int poolSize = executorService.getPoolSize();
+                    int largestPoolSize = executorService.getLargestPoolSize();
+                    long taskCount = executorService.getTaskCount();
+                    long tompleteTaskCount = executorService.getCompletedTaskCount();
+                    log.error("活动线程数：" + activeCount);
+                    log.error("当前线程数：" + poolSize);
+                    log.error("历史最大线程数：" + largestPoolSize);
+                    log.error("需要执行的任务数：" + taskCount);
+                    log.error("已完成的任务数：" + tompleteTaskCount);
+                    try {
+                        Thread.sleep(60 * 1000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }).start();
+
+        // 任务数量
+        CountDownLatch countDownLatch = new CountDownLatch(startNodes.size());
         for (RequestStartNode startNode : startNodes) {
             log.info("Using thread pool to proccess category : " + startNode.getName());
-//            executorService.execute(new SubDataCrawler(startNode.getpName(), startNode.getSid(), startNode.getId(), startNode.getDeep()));
+            executorService.execute(new SubDataCrawler(startNode.getpName(), startNode.getSid(), startNode.getId(), startNode.getDeep(), countDownLatch));
         }
-        log.info("Thread count: " + threadCnt);
+        countDownLatch.await();
+        // 所有任务执行完成
+        executorService.shutdown();
+        long end = System.currentTimeMillis();
+        log.info("爬取完成，耗时：" + (end - start) / 1000 / 60 + "min, 总数据量 :　" + dataNumber);
     }
 
     /*
@@ -161,6 +207,7 @@ public class DynamicCommodityCategoryCrawler extends AbstractCommodityCategoryCr
      */
 
     private Category newCategory(JSONObject jsonObject, int deep) {
+        dataNumber++;
         String spell = jsonObject.getString("spell");
         String name = jsonObject.getString("name");
         Integer supid = jsonObject.getInteger("spuid");
@@ -242,25 +289,28 @@ public class DynamicCommodityCategoryCrawler extends AbstractCommodityCategoryCr
         private String sid;
         private String pv;
         private Long prevPid;
+        private CountDownLatch countDownLatch;
 
-        SubDataCrawler(String tableName, String sid, Long pid, int deep) {
+        SubDataCrawler(String tableName, String sid, Long pid, int deep, CountDownLatch countDownLatch) {
             this.sid = sid;
             this.pid = pid;
             this.deep = deep;
             this.tblName = tableName;
-            threadCnt++;
+            this.countDownLatch = countDownLatch;
         }
 
         @Override
         public void run() {
             try {
                 crawl(PATH.NEXT, sid, "", pid, null, deep);
-            } catch (IOException e) {
+            } catch (Exception e) {
                 log.error("Exception : ", e);
+            } finally {
+                countDownLatch.countDown();
             }
         }
 
-        private void crawl(PATH path, String sid, String pv, Long pid, Long prevPid, int deep) throws IOException {
+        private void crawl(PATH path, String sid, String pv, Long pid, Long prevPid, int deep) throws IOException, InterruptedException {
             Map<String, Object> params = new HashMap<>();
             params.put("path", path.toString().toLowerCase());
             params.put("sid", sid);
@@ -272,6 +322,7 @@ public class DynamicCommodityCategoryCrawler extends AbstractCommodityCategoryCr
 
             String jsonStr = HttpUtil.me().post(URL, params, headers);
             Thread.yield();
+            Thread.sleep(10);
             if (!StringUtils.hasLength(jsonStr)) {
                 log.warn("Request successfully but respond nothing.");
                 return;
