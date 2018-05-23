@@ -15,10 +15,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.*;
 
 /**
@@ -49,6 +46,10 @@ public class DynamicCommodityCategoryCrawler extends AbstractCommodityCategoryCr
     private static final int POOL_SIZE = 16;
 
     private volatile int dataNumber = 0;
+
+    private final Object lock = new Object();
+
+    private volatile boolean cookieExpired = false;
 
     private static ThreadPoolExecutor executorService = new ThreadPoolExecutor(POOL_SIZE, POOL_SIZE * 2,
             60, TimeUnit.MINUTES, new ArrayBlockingQueue<Runnable>(1024), r -> {
@@ -113,10 +114,19 @@ public class DynamicCommodityCategoryCrawler extends AbstractCommodityCategoryCr
 
         String jsonStr = HttpUtil.me().post(URL, params, headers);
         if (!StringUtils.hasLength(jsonStr)) {
-            log.error("Request successfully but respond nothing.");
-            System.exit(0);
-            return;
+            log.warn("Request successfully but respond nothing.");
+            while (!StringUtils.hasLength(jsonStr)) {
+                log.info("Last cookie : " + COOKIE);
+                log.info("Cookie is expired or illegal, please reenter a new one : ");
+                Scanner scanner = new Scanner(System.in);
+                COOKIE = scanner.nextLine();
+                headers.put("Cookie", COOKIE);
+                log.info("New cookie : " + COOKIE);
+                log.info("New cookie has been set successfuly.");
+                jsonStr = HttpUtil.me().post(URL, params, headers);
+            }
         }
+
         JSONArray jsonArray = JSON.parseArray(jsonStr);
         Category category = null;
 
@@ -166,6 +176,9 @@ public class DynamicCommodityCategoryCrawler extends AbstractCommodityCategoryCr
             @Override
             public void run() {
                 while (true) {
+                    synchronized (lock) {
+                        log.info("Cookie is ispired, Waiting for new cookie.");
+                    }
                     int activeCount = executorService.getActiveCount();
                     int poolSize = executorService.getPoolSize();
                     int largestPoolSize = executorService.getLargestPoolSize();
@@ -191,6 +204,7 @@ public class DynamicCommodityCategoryCrawler extends AbstractCommodityCategoryCr
             log.info("Using thread pool to proccess category : " + startNode.getName());
             executorService.execute(new SubDataCrawler(startNode.getpName(), startNode.getSid(), startNode.getId(), startNode.getDeep(), countDownLatch));
         }
+
         countDownLatch.await();
         // 所有任务执行完成
         executorService.shutdown();
@@ -303,6 +317,7 @@ public class DynamicCommodityCategoryCrawler extends AbstractCommodityCategoryCr
         public void run() {
             try {
                 crawl(PATH.NEXT, sid, "", pid, null, deep);
+                log.info("类目爬取完成，tblName : " + tblName + ", sid：" + sid);
             } catch (Exception e) {
                 log.error("Exception : ", e);
             } finally {
@@ -321,12 +336,30 @@ public class DynamicCommodityCategoryCrawler extends AbstractCommodityCategoryCr
             headers.put("Content-Type", "application/x-www-form-urlencoded; charset=UTF-8");
 
             String jsonStr = HttpUtil.me().post(URL, params, headers);
-            Thread.yield();
-            Thread.sleep(10);
             if (!StringUtils.hasLength(jsonStr)) {
-                log.warn("Request successfully but respond nothing.");
-                return;
+                cookieExpired = true;
+                synchronized (lock) {
+                    if (cookieExpired) { // 同步阻塞获取新的cookie
+                        while (!StringUtils.hasLength(jsonStr)) {
+                            log.info("Last cookie : " + COOKIE);
+                            log.info("Cookie is expired or illegal, please reenter a new cookie: ");
+                            Scanner scanner = new Scanner(System.in);
+                            COOKIE = scanner.nextLine();
+                            log.info("New cookie : " + COOKIE);
+                            log.info("New cookie has been set, notify all thread.");
+
+                            headers.put("Cookie", COOKIE);
+                            jsonStr = HttpUtil.me().post(URL, params, headers);
+                        }
+                        cookieExpired = false;
+                    } else {
+                        // 重新获取数据
+                        headers.put("Cookie", COOKIE);
+                        jsonStr = HttpUtil.me().post(URL, params, headers);
+                    }
+                }
             }
+
             JSONArray jsonArray = JSON.parseArray(jsonStr);
             Category category = null;
             for (Object json : jsonArray) {
